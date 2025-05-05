@@ -1,89 +1,87 @@
-const valuestext = document.getElementById("valuesText");
-const scoretext = document.getElementById("scoreText");
-const setAsideContainer = document.getElementById("set-aside-container");
-
-let numberOfDice = 6;
+//–– STATE ––
+let remainingDice = 6;
 let runningTotal = 0;
-let setAsideDice = [];
+let currentRoll = []; // e.g. [4,1,2,6,…]
+let selectedDice = []; // subset of currentRoll
 
-function response(res) {
-    valuesText.textContent = `Dice results: ${res.join(', ')}`;
-    const score = calculateFarkleScore(res);
-    scoreText.textContent = `Score: ${score}`;
-    runningTotal += score;
-    updateSetAsideContainer(res);
-}
+//–– DOM REFS ––
+const valuesText = document.getElementById("valuesText");
+const scoreText = document.getElementById("scoreText");
+const diceBox = document.getElementById("dice-box1");
+const setAsideBtn = document.getElementById("bank-button");
 
-function rollDiceWithoutValues() {
-  const element = document.getElementById('dice-box1');
-  const options = {
-    element, // element to display the animated dice in.
-    numberOfDice, // number of dice to use 
-    callback: response(),
+//–– ROLLING ––
+function rollDice() {
+  // roll `remainingDice` dice…
+  rollADie({
+    element: diceBox,
+    numberOfDice: remainingDice,
+    callback: onRolled,
     delay: 10000,
     soundVolume: 0
-  }
-  rollADie(options);
-}
-
-function updateSetAsideContainer(dice) {
-    setAsideContainer.innerHTML = '';
-    dice.forEach(value => {
-    const dieElement = document.createElement('div');
-    dieElement.className = 'die';
-    dieElement.textContent = value;
-    dieElement.onclick = () => setAsideDie(value);
-    setAsideContainer.appendChild(dieElement);
-    });
-}
-    
-function setAsideDie(value) {
-    numberOfDice -= 1;
-    if(numberOfDice === 0)
-        numberOfDice = 6;
-
-    setAsideDice.push(value);
-    runningTotal += calculateFarkleScore([value]);
-    scoreText.textContent = `Running Total: ${runningTotal}`;
-    updateSetAsideContainer(setAsideDice);
-}
-    
-
-function calculateFarkleScore(dice) {
-  const counts = {};
-  dice.forEach(value => {
-    counts[value] = (counts[value] || 0) + 1;
   });
+}
 
-  let score = 0;
+function onRolled(results) {
+  currentRoll = results;
+  selectedDice = [];
+  renderDice();
+  updateScoreDisplay();
+}
 
-  // Check for specific combinations
-  if (counts[1] === 1) score += 100;
-  if (counts[5] === 1) score += 50;
-  if (counts[1] === 3) score += 300;
-  if (counts[2] === 3) score += 200;
-  if (counts[3] === 3) score += 300;
-  if (counts[4] === 3) score += 400;
-  if (counts[5] === 3) score += 500;
-  if (counts[6] === 3) score += 600;
-  if (counts[1] === 4 || counts[2] === 4 || counts[3] === 4 || counts[4] === 4 || counts[5] === 4 || counts[6] === 4) score += 1000;
-  if (counts[1] === 5 || counts[2] === 5 || counts[3] === 5 || counts[4] === 5 || counts[5] === 5 || counts[6] === 5) score += 2000;
-  if (counts[1] === 6 || counts[2] === 6 || counts[3] === 6 || counts[4] === 6 || counts[5] === 6 || counts[6] === 6) score += 3000;
+//–– RENDERING ––
+function renderDice() {
+  diceBox.innerHTML = "";
+  currentRoll.forEach((value, idx) => {
+    const die = document.createElement("div");
+    die.textContent = value;
+    die.className = "die" + (selectedDice.includes(idx) ? " selected" : "");
+    die.onclick = () => toggleSelect(idx);
+    diceBox.appendChild(die);
+  });
+}
 
-  // Check for special combinations
-  const uniqueValues = Object.keys(counts).map(Number);
-  if (uniqueValues.length === 6 && uniqueValues.includes(1) && uniqueValues.includes(2) && uniqueValues.includes(3) && uniqueValues.includes(4) && uniqueValues.includes(5) && uniqueValues.includes(6)) {
-    score += 1500; // 1–6 straight
+//–– SELECTION ––
+function toggleSelect(index) {
+  if (selectedDice.includes(index)) {
+    selectedDice = selectedDice.filter(i => i !== index);
+  } else {
+    selectedDice.push(index);
   }
-  if (uniqueValues.length === 3 && uniqueValues.every(value => counts[value] === 2)) {
-    score += 1500; // Three pairs
-  }
-  if (uniqueValues.length === 2 && uniqueValues.some(value => counts[value] === 4) && uniqueValues.some(value => counts[value] === 2)) {
-    score += 1500; // Four of any number with a pair
-  }
-  if (uniqueValues.length === 2 && uniqueValues.every(value => counts[value] === 3)) {
-    score += 2500; // Two triplets
-  }
+  renderDice();
+  // optional: live‐show partial score
+  const combo = selectedDice.map(i => currentRoll[i]);
+  scoreText.textContent = `This combo scores: ${calculateFarkleScore(combo)}`;
+}
 
-  return score;
+//–– BANKING (set aside) ––
+function bankSelection() {
+  const combo = selectedDice.map(i => currentRoll[i]);
+  const comboScore = calculateFarkleScore(combo);
+  if (comboScore === 0) {
+    alert("Those dice don’t score—pick a valid combination.");
+    return;
+  }
+  // commit score
+  runningTotal += comboScore;
+  // remove those dice from the pool
+  // we filter out by index
+  currentRoll = currentRoll.filter((_, idx) => !selectedDice.includes(idx));
+  remainingDice = currentRoll.length;
+  // if none left, “hot dice” – reset to full rack
+  if (remainingDice === 0) remainingDice = 6;
+  
+  // clear selection, re‐render
+  selectedDice = [];
+  renderDice();
+  updateScoreDisplay();
+}
+
+//–– UI HOOKUP ––
+document.getElementById("roll-button").onclick = rollDice();
+document.getElementById("bank-button").onclick = bankSelection();
+
+function updateScoreDisplay() {
+  valuesText.textContent = `Dice: ${currentRoll.join(", ")}`;
+  scoreText.textContent = `Total: ${runningTotal} | Remaining dice: ${remainingDice}`;
 }
