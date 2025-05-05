@@ -1,11 +1,12 @@
 //–– STATE ––
 let remainingDice = 6;
 let runningTotal = 0;
+let totalPoints = 0;
 let currentRoll = []; // e.g. [4,1,2,6,…]
 let selectedDice = []; // subset of currentRoll
 
 //–– DOM REFS ––
-const valuesText = document.getElementById("valuesText");
+const totalScoreText = document.getElementById("totalScoreText");
 const scoreText = document.getElementById("scoreText");
 const diceBox = document.getElementById("dice-box1");
 const setAsideBtn = document.getElementById("bank-button");
@@ -13,23 +14,41 @@ const setAsideContainer = document.getElementById("bank-container");
 const checkboxes = Array.from(setAsideContainer.querySelectorAll("input[type='checkbox']"));
 const labels = Array.from(setAsideContainer.querySelectorAll("label"));
 
+//-- TURNS --
+function finishTurn() {
+    totalPoints += runningTotal;
+    runningTotal = 0;
+    remainingDice = 6;
+    currentRoll = [];
+    selectedDice = [];
+    updateScoreDisplay();
+    checkForWin();
+}
+
 //–– ROLLING ––
 function rollDice() {
-  // roll `remainingDice` dice…
   rollADie({
     element: diceBox,
     numberOfDice: remainingDice,
     callback: onRolled,
-    delay: 10000,
+    delay: 9999999,
     soundVolume: 0
   });
 }
 
 function onRolled(results) {
-  currentRoll = results;
-  selectedDice = [];
-  renderDice();
-  updateScoreDisplay();
+    currentRoll = results;
+    selectedDice = [];
+    renderDice();
+    updateScoreDisplay();
+  
+    // Check if the rolled dice can make a combination
+    const comboScore = calculateFarkleScore(currentRoll);
+    if (comboScore === 0) {
+        alert("No valid combination. Turn ends.");
+        runningTotal = 0;
+        finishTurn();
+    }
 }
 
 //–– RENDERING ––
@@ -58,7 +77,7 @@ function toggleSelect(index) {
   } else {
     selectedDice.push(index);
   }
-  // optional: live‐show partial score
+  // live‐show partial score
   const combo = selectedDice.map(i => currentRoll[i]);
   scoreText.textContent = `This combo scores: ${calculateFarkleScore(combo)}`;
 }
@@ -68,13 +87,13 @@ function bankSelection() {
   const combo = selectedDice.map(i => currentRoll[i]);
   const comboScore = calculateFarkleScore(combo);
   if (comboScore === 0) {
-    alert("Those dice don’t score—pick a valid combination.");
+    alert("Those dice don’t score. Pick a valid combination.");
     return;
   }
   // commit score
   runningTotal += comboScore;
   // remove those dice from the pool
-  // we filter out by index
+  // filter out by index
   currentRoll = currentRoll.filter((_, idx) => !selectedDice.includes(idx));
   remainingDice = currentRoll.length;
   // if none left, “hot dice” – reset to full rack
@@ -88,8 +107,16 @@ function bankSelection() {
 
 //–– UI HOOKUP ––
 function updateScoreDisplay() {
-  valuesText.textContent = `Dice: ${currentRoll.join(", ")}`;
+  totalScoreText.textContent = `Total Score: ${totalPoints}`;
   scoreText.textContent = `Total: ${runningTotal} | Remaining dice: ${remainingDice}`;
+}
+
+//-- SCORE --
+function checkForWin(){
+    if(totalPoints >= 10000){
+        totalScoreText.textContent = "You won!";
+        scoreText.textContent = "You won!";
+    }
 }
 
 function calculateFarkleScore(dice) {
