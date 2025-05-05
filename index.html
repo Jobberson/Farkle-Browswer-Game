@@ -10,16 +10,14 @@
       content="A simple Farkle dice game in HTML"
     />
     <script src="script.js" defer></script>
+    <script src="https://unpkg.com/roll-a-die@2.0.1/dist/roll-a-die.js" defer></script>
 </head>
 <body>
-    <div id="dice-container">
-        <div id="dice-box"></div>
-            <button onclick="rollDice()">Roll Dice</button>
-            <p id="valuesText"></p>
-            <p id="scoreText"></p>
-            <div id="set-aside-container"></div>
-        </div>
-    </div>
-    <script src="https://unpkg.com/roll-a-die@1.3.0/dist/roll-a-die.js" defer></script>
+  <div id="dice-box1"></div>
+  <input type="number" id="number1" placeholder="Number of Dice">
+  <button onclick="rollDiceWithoutValues()">Roll Dice</button>
+  <p id="valuesText"></p>
+  <p id="scoreText"></p>
+  <div id="set-aside-container"></div>
 </body>
 </html>

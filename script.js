@@ -1,49 +1,54 @@
-const valuesText = document.getElementById("valuesText");
-const scoreText = document.getElementById("scoreText");
+const valuestext = document.getElementById("valuesText");
+const scoretext = document.getElementById("scoreText");
 const setAsideContainer = document.getElementById("set-aside-container");
 
+let numOfDice = 6;
 let runningTotal = 0;
 let setAsideDice = [];
 
 function response(res) {
-valuesText.textContent = `Dice results: ${res.join(', ')}`;
-const score = calculateFarkleScore(res);
-scoreText.textContent = `Score: ${score}`;
-runningTotal += score;
-updateSetAsideContainer(res);
+    valuesText.textContent = `Dice results: ${res.join(', ')}`;
+    const score = calculateFarkleScore(res);
+    scoreText.textContent = `Score: ${score}`;
+    runningTotal += score;
+    updateSetAsideContainer(res);
 }
 
-function rollDice() {
-const element = document.getElementById('dice-box');
-const numberOfDice = 6; // Always rolling 6 dice
-const options = {
- element,
- numberOfDice,
- callback: response,
- delay: 3000,
- soundVolume: 0
-}
-rollADie(options);
+function rollDiceWithoutValues() {
+  const element = document.getElementById('dice-box1');
+  const numberOfDice = +document.getElementById('number1').value;
+  const options = {
+    element, // element to display the animated dice in.
+    numberOfDice, // number of dice to use 
+    callback: response,
+    delay: 10000,
+    soundVolume: 0
+  }
+  rollADie(options);
 }
 
 function updateSetAsideContainer(dice) {
-setAsideContainer.innerHTML = '';
-dice.forEach(value => {
- const dieElement = document.createElement('div');
- dieElement.className = 'die';
- dieElement.textContent = value;
- dieElement.onclick = () => setAsideDie(value);
- setAsideContainer.appendChild(dieElement);
-});
+    setAsideContainer.innerHTML = '';
+    dice.forEach(value => {
+    const dieElement = document.createElement('div');
+    dieElement.className = 'die';
+    dieElement.textContent = value;
+    dieElement.onclick = () => setAsideDie(value);
+    setAsideContainer.appendChild(dieElement);
+    });
 }
-
+    
 function setAsideDie(value) {
-setAsideDice.push(value);
-runningTotal += calculateFarkleScore([value]);
-scoreText.textContent = `Running Total: ${runningTotal}`;
-updateSetAsideContainer(setAsideDice);
-}
+    numOfDice -= 1;
+    if(numOfDice === 0)
+        numOfDice = 6;
 
+    setAsideDice.push(value);
+    runningTotal += calculateFarkleScore([value]);
+    scoreText.textContent = `Running Total: ${runningTotal}`;
+    updateSetAsideContainer(setAsideDice);
+}
+    
 
 function calculateFarkleScore(dice) {
   const counts = {};
