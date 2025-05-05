@@ -1,31 +1,39 @@
 .block {
-    display: flex;
-    position: relative;
-    justify-content: center;
-  }
-  .dice-count, .dice-count input {
-    font-size: 20px;
-  }
-  .box {
-    width: 500px;
-    border: 1px solid black;
-    text-align: center;
-    height: 300px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-content: center;
-    margin: 5px;
-  }
-  #dice-box1 {
-    height: 200px;
-  }
-  .roll {
-    height: 80px;
-    width: 200px;
-    border-radius: 10px;
-    background-color: green;
-    color: white;
-    font-size: 20px;
-    margin: 10px 0px;
-  }
+  display: flex;
+  position: relative;
+  justify-content: center;
+}
+
+.dice-count, .dice-count input {
+  font-size: 20px;
+}
+
+.box {
+  width: 500px;
+  border: 1px solid black;
+  text-align: center;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: center;
+  margin: 5px;
+}
+
+#dice-box1 {
+  height: 200px;
+}
+
+#dice-box2 {
+  height: 200px;
+}
+
+.roll {
+  height: 80px;
+  width: 200px;
+  border-radius: 10px;
+  background-color: green;
+  color: white;
+  font-size: 20px;
+  margin: 10px 0px;
+}
