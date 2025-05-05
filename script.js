@@ -2,7 +2,7 @@ const valuestext = document.getElementById("valuesText");
 const scoretext = document.getElementById("scoreText");
 const setAsideContainer = document.getElementById("set-aside-container");
 
-let numOfDice = 6;
+let numberOfDice = 6;
 let runningTotal = 0;
 let setAsideDice = [];
 
@@ -16,11 +16,10 @@ function response(res) {
 
 function rollDiceWithoutValues() {
   const element = document.getElementById('dice-box1');
-  const numberOfDice = +document.getElementById('number1').value;
   const options = {
     element, // element to display the animated dice in.
     numberOfDice, // number of dice to use 
-    callback: response,
+    callback: response(),
     delay: 10000,
     soundVolume: 0
   }
@@ -39,9 +38,9 @@ function updateSetAsideContainer(dice) {
 }
     
 function setAsideDie(value) {
-    numOfDice -= 1;
-    if(numOfDice === 0)
-        numOfDice = 6;
+    numberOfDice -= 1;
+    if(numberOfDice === 0)
+        numberOfDice = 6;
 
     setAsideDice.push(value);
     runningTotal += calculateFarkleScore([value]);

@@ -12,12 +12,16 @@
     <script src="script.js" defer></script>
     <script src="https://unpkg.com/roll-a-die@2.0.1/dist/roll-a-die.js" defer></script>
 </head>
-<body>
-  <div id="dice-box1"></div>
-  <input type="number" id="number1" placeholder="Number of Dice">
-  <button onclick="rollDiceWithoutValues()">Roll Dice</button>
-  <p id="valuesText"></p>
-  <p id="scoreText"></p>
-  <div id="set-aside-container"></div>
+<body class="block">
+    <div class="box">
+        <div>
+            <button onclick="rollDiceWithoutValues()">roll</button>
+            <p id="valuesText"></p>
+            <p id="scoreText"></p>
+        </div>
+        <div id="dice-box1"></div>
+        <div id="set-aside-container"></div>
+      </div>
 </body>
 </html>
+
