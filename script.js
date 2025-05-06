@@ -51,17 +51,65 @@ function onRolled(results) {
     }
 }
 
+//–– HELPER: which indices in a roll are actually scoring dice? ––
+function getScoringIndices(dice) {
+  const indices = new Set();
+  const valueIndices = {};
+  
+  // group indices by face value
+  dice.forEach((v, i) => {
+    if (!valueIndices[v]) valueIndices[v] = [];
+    valueIndices[v].push(i);
+  });
+
+  const uniqueVals = Object.keys(valueIndices).map(Number);
+
+  // special‐combo: straight, 3 pairs, 4+pair, two triplets
+  const isStraight = uniqueVals.length === 6;
+  const isThreePairs = uniqueVals.length === 3 && uniqueVals.every(v => valueIndices[v].length === 2);
+  const isFourPlusPair = uniqueVals.length === 2 
+                        && uniqueVals.some(v => valueIndices[v].length === 4)
+                        && uniqueVals.some(v => valueIndices[v].length === 2);
+  const isTwoTriplets = uniqueVals.length === 2 && uniqueVals.every(v => valueIndices[v].length === 3);
+
+  if (isStraight || isThreePairs || isFourPlusPair || isTwoTriplets) {
+    // every die is part of the special combo
+    return new Set(dice.map((_, i) => i));
+  }
+
+  // singles (1s and 5s)
+  [1, 5].forEach(v => {
+    if (valueIndices[v]) valueIndices[v].forEach(i => indices.add(i));
+  });
+
+  // any kind (3 or more of a kind)
+  for (const [v, inds] of Object.entries(valueIndices)) {
+    if (inds.length >= 3) {
+      // include all of them (3, 4, 5, or 6 of a kind all count)
+      inds.forEach(i => indices.add(i));
+    }
+  }
+
+  return indices;
+}
+
 //–– RENDERING ––
 function renderDice() {
+  const scoringIndices = getScoringIndices(currentRoll);
+
   checkboxes.forEach((checkbox, idx) => {
     if (idx < currentRoll.length) {
       labels[idx].textContent = currentRoll[idx];
       checkbox.checked = false;
-      checkbox.style.display = "inline-block";
-      labels[idx].style.display = "inline-block";
+      // disable any die that isn’t scoring
+      checkbox.disabled = !scoringIndices.has(idx);
+      checkbox.style.visibility = 'visible';
+      labels[idx].style.visibility = 'visible';
+      // dim non-scoring faces so the player can see why
+      labels[idx].style.opacity = scoringIndices.has(idx) ? '1' : '0.3';
     } else {
-      checkbox.style.display = "none";
-      labels[idx].style.display = "none";
+      checkbox.style.visibility = 'hidden';
+      labels[idx].style.visibility = 'hidden';
     }
   });
 }
@@ -84,21 +132,30 @@ function toggleSelect(index) {
 
 //–– BANKING (set aside) ––
 function bankSelection() {
+  const scoringIndices = getScoringIndices(currentRoll);
+  // make sure they only picked scoring dice
+  if (!selectedDice.every(i => scoringIndices.has(i))) {
+    alert("You can only set aside dice that contribute to the score.");
+    return;
+  }
+
   const combo = selectedDice.map(i => currentRoll[i]);
   const comboScore = calculateFarkleScore(combo);
   if (comboScore === 0) {
     alert("Those dice don’t score. Pick a valid combination.");
     return;
   }
+
   // commit score
   runningTotal += comboScore;
+
   // remove those dice from the pool
-  // filter out by index
   currentRoll = currentRoll.filter((_, idx) => !selectedDice.includes(idx));
   remainingDice = currentRoll.length;
-  // if none left, “hot dice” – reset to full rack
+
+  // hot dice!
   if (remainingDice === 0) remainingDice = 6;
-  
+
   // clear selection, re‐render
   selectedDice = [];
   renderDice();
@@ -154,6 +211,6 @@ function calculateFarkleScore(dice) {
     if (uniqueValues.length === 2 && uniqueValues.every(value => counts[value] === 3)) {
         score += 2500; // Two triplets
     }
-
+    
     return score;
 }
