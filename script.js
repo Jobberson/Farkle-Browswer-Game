@@ -66,10 +66,13 @@ function getScoringIndices(dice) {
 
   // special‐combo: straight, 3 pairs, 4+pair, two triplets
   const isStraight = uniqueVals.length === 6;
+  
   const isThreePairs = uniqueVals.length === 3 && uniqueVals.every(v => valueIndices[v].length === 2);
+  
   const isFourPlusPair = uniqueVals.length === 2 
                         && uniqueVals.some(v => valueIndices[v].length === 4)
                         && uniqueVals.some(v => valueIndices[v].length === 2);
+  
   const isTwoTriplets = uniqueVals.length === 2 && uniqueVals.every(v => valueIndices[v].length === 3);
 
   if (isStraight || isThreePairs || isFourPlusPair || isTwoTriplets) {
