@@ -63,7 +63,7 @@ function getScoringIndices(dice) {
   });
 
   const uniqueVals = Object.keys(valueIndices).map(Number);
-j
+
   // special‐combo: straight, 3 pairs, 4+pair, two triplets
   const isStraight = uniqueVals.length === 6;
   
